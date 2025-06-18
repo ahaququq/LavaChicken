@@ -25,7 +25,7 @@ GLFWwindow *setup_window() {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, false);
 
-	return glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+	return glfwCreateWindow(WIDTH, HEIGHT, "LavaChicken main window", nullptr, nullptr);
 }
 
 
@@ -34,7 +34,7 @@ auto setup_instance() {
 	const raii::Context context{};
 
 	vk::ApplicationInfo app_info{
-		"Voxtron Engine for Vulkan - Test App", vk::makeApiVersion(1, 0, 0, 0), "Voxtron Engine",
+		"LavaChicken on Vulkan - Test App", vk::makeApiVersion(1, 0, 0, 0), "LavaChicken",
 		vk::makeApiVersion(1, 0, 0, 0),			vk::makeApiVersion(1, 0, 0, 0),
 	};
 

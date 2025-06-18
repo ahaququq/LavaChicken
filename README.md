@@ -12,3 +12,6 @@ Currently, I have no idea if anything comes out of it
 - [x] Get a window to show up
   - [ ] Make it render on Wayland
 - [ ] Show a triangle
+
+## What will not happen:
+- Anything on non-linux devices
