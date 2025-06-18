@@ -8,8 +8,6 @@
 #include <map>
 #include <set>
 
-#include "vulkan/vulkan_raii.hpp"
-
 import vulkan_hpp;
 
 namespace raii = vk::raii;
@@ -259,22 +257,21 @@ vk::Extent2D choose_swap_extent(const vk::SurfaceCapabilitiesKHR& capabilities, 
 
 
 
-auto create_swap_chain(
-	const raii::PhysicalDevice &physical_device,
-	const raii::SurfaceKHR &surface,
-	GLFWwindow *window,
-	const raii::Device &device,
-	QueueIndices queue_indices,
-
-	raii::SwapchainKHR& swapchain_out,
-	vk::Format& format_out,
-	vk::Extent2D& extent_out
+void create_swap_chain(
+	const	raii::PhysicalDevice	&physical_device,
+	const	raii::SurfaceKHR		&surface,
+			GLFWwindow				*window,
+	const	raii::Device			&device,
+			QueueIndices			queue_indices,
+			raii::SwapchainKHR		&swapchain_out,
+			vk::Format				&format_out,
+			vk::Extent2D			&extent_out
 ) {
 	const SwapChainSupportDetails support_details = query_swap_chain_support(physical_device, surface);
 
-	vk::SurfaceFormatKHR surface_format = choose_swap_surface_format(support_details.formats);
-	vk::PresentModeKHR present_mode = choose_swap_present_mode(support_details.presentModes);
-	vk::Extent2D extent = choose_swap_extent(support_details.capabilities, window);
+	const vk::SurfaceFormatKHR surface_format = choose_swap_surface_format(support_details.formats);
+	const vk::PresentModeKHR present_mode = choose_swap_present_mode(support_details.presentModes);
+	const vk::Extent2D extent = choose_swap_extent(support_details.capabilities, window);
 
 	unsigned int image_count = support_details.capabilities.minImageCount + 1;
 
@@ -282,34 +279,95 @@ auto create_swap_chain(
 		image_count = support_details.capabilities.maxImageCount;
 	}
 
-	bool same_queues = *queue_indices.present_queue_family_index == queue_indices.queue_family_indices[vk::QueueFlagBits::eGraphics];
+	const bool same_queues = *queue_indices.present_queue_family_index ==
+					   queue_indices.queue_family_indices[vk::QueueFlagBits::eGraphics];
 
-	unsigned int queue_family_indices[] = {
-		queue_indices.queue_family_indices[vk::QueueFlagBits::eGraphics],
-		*queue_indices.present_queue_family_index
-	};
+	unsigned int queue_family_indices[] = {queue_indices.queue_family_indices[vk::QueueFlagBits::eGraphics],
+										   *queue_indices.present_queue_family_index};
 
 	const vk::SwapchainCreateInfoKHR swapchain_create_info{
-		{},
-		surface,
-		image_count,
-		surface_format.format,
-		surface_format.colorSpace,
-		extent,
-		1,
-		vk::ImageUsageFlagBits::eColorAttachment,
-		(same_queues ? vk::SharingMode::eExclusive : vk::SharingMode::eConcurrent),
-		(same_queues ? 0u : 2u),
-		(same_queues ? nullptr : queue_family_indices),
-		support_details.capabilities.currentTransform,
-		vk::CompositeAlphaFlagBitsKHR::eOpaque,
-		present_mode,
-		true
-	};
+			{},
+			surface,
+			image_count,
+			surface_format.format,
+			surface_format.colorSpace,
+			extent,
+			1,
+			vk::ImageUsageFlagBits::eColorAttachment,
+			(same_queues ? vk::SharingMode::eExclusive : vk::SharingMode::eConcurrent),
+			(same_queues ? 0u : 2u),
+			(same_queues ? nullptr : queue_family_indices),
+			support_details.capabilities.currentTransform,
+			vk::CompositeAlphaFlagBitsKHR::eOpaque,
+			present_mode,
+			true};
 
 	swapchain_out = std::move(raii::SwapchainKHR{device, swapchain_create_info});
 	format_out = surface_format.format;
 	extent_out = extent;
+}
+
+
+
+auto create_swapchain_image_views(const raii::Device &device, const vk::Format &surface_format,
+								  const std::vector<vk::Image> &swap_chain_images) {
+	std::vector<raii::ImageView> swapchain_image_views;
+
+	for (auto image: swap_chain_images) {
+		vk::ImageViewCreateInfo create_info{{},
+											image,
+											vk::ImageViewType::e2D,
+											surface_format,
+											{},
+											vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
+		swapchain_image_views.emplace_back(device, create_info);
+	}
+
+	return std::move(swapchain_image_views);
+}
+
+
+
+auto create_render_pass(const raii::Device &device, const vk::Format surface_format) {
+	vk::AttachmentDescription color_attachment{
+			{},
+			surface_format,
+			vk::SampleCountFlagBits::e1,
+			vk::AttachmentLoadOp::eClear,
+			vk::AttachmentStoreOp::eStore,
+			vk::AttachmentLoadOp::eDontCare,
+			vk::AttachmentStoreOp::eDontCare,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::ePresentSrcKHR
+		};
+
+	vk::AttachmentReference color_attachment_ref{
+		0, vk::ImageLayout::eAttachmentOptimal
+	};
+
+	vk::SubpassDescription subpass{
+			{},
+			vk::PipelineBindPoint::eGraphics,
+			0,
+			{},
+			1,
+			&color_attachment_ref
+		};
+
+	vk::RenderPassCreateInfo render_pass_create_info{
+			{},
+			1,
+			&color_attachment,
+			1,
+			&subpass
+		};
+
+	raii::RenderPass render_pass{
+		device,
+		render_pass_create_info
+	};
+
+	return std::move(render_pass);
 }
 
 
@@ -347,21 +405,9 @@ void start() {
 	create_swap_chain(physical_device, display_surface, window, device, queue_indices, swapchain, surface_format, surface_extent);
 
 	std::vector<vk::Image> swap_chain_images = swapchain.getImages();
-	std::vector<raii::ImageView> swapchain_image_views;
+	std::vector<raii::ImageView> swapchain_image_views = create_swapchain_image_views(device, surface_format, swap_chain_images);
 
-	for (auto image : swap_chain_images) {
-		vk::ImageViewCreateInfo create_info{
-			{},
-			image,
-			vk::ImageViewType::e2D,
-			surface_format,
-			{},
-			vk::ImageSubresourceRange{
-				vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1
-			}
-		};
-		swapchain_image_views.emplace_back(device, create_info);
-	}
+	raii::RenderPass render_pass = create_render_pass(device, surface_format);
 
 
 
