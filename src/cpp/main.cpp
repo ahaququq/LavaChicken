@@ -14,6 +14,25 @@ namespace raii = vk::raii;
 
 
 
+static std::vector<char> readFile(const std::string& filename) {
+	std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+	if (!file.is_open()) {
+		throw std::runtime_error("failed to open file!");
+	}
+
+	const long fileSize = file.tellg();
+	std::vector<char> buffer(fileSize);
+
+	file.seekg(0);
+	file.read(buffer.data(), fileSize);
+	file.close();
+
+	return buffer;
+}
+
+
+
 constexpr unsigned int WIDTH = 800;
 constexpr unsigned int HEIGHT = 600;
 
