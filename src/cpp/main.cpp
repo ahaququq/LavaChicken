@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #undef GLFW_INCLUDE_VULKAN
 #include <bitset>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <set>
