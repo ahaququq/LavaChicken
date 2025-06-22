@@ -450,6 +450,121 @@ auto create_render_pass(const raii::Device &device, const vk::Format surface_for
 
 
 
+auto configure_graphics_pipeline(
+	vk::Extent2D surface_extent,
+	const raii::Device &device
+) {
+	std::vector<vk::DynamicState> dynamic_states = {
+		vk::DynamicState::eViewport,
+		vk::DynamicState::eScissor
+	};
+
+	vk::PipelineDynamicStateCreateInfo dynamic_state_create_info = {
+		{},
+		static_cast<uint32_t>(dynamic_states.size()),
+		dynamic_states.data()
+	};
+
+	vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info = {
+		{},
+		0,
+		nullptr,
+		0,
+		nullptr
+	};
+
+	vk::PipelineInputAssemblyStateCreateInfo assembly_state_create_info = {
+		{},
+		vk::PrimitiveTopology::eTriangleList,
+		false
+	};
+
+	vk::Viewport viewport = {
+		0, 0,
+		static_cast<float>(surface_extent.width),
+		static_cast<float>(surface_extent.height),
+		0, 1
+	};
+
+	vk::Rect2D scissor = {{0, 0}, surface_extent};
+
+	vk::PipelineViewportStateCreateInfo pipeline_viewport_state_create_info = {
+		{},
+		1,
+		&viewport,
+		1,
+		&scissor
+	};
+
+	vk::PipelineRasterizationStateCreateInfo rasterization_state_create_info = {
+		{},
+		false,
+		false,
+		vk::PolygonMode::eFill,
+		vk::CullModeFlagBits::eBack,
+		vk::FrontFace::eClockwise,
+		false,
+		0,
+		0,
+		0,
+		1
+	};
+
+	vk::PipelineMultisampleStateCreateInfo multisample_state_create_info = {
+		{},
+		vk::SampleCountFlagBits::e1,
+		false,
+		1.0,
+		nullptr,
+		false,
+		false
+	};
+
+	vk::PipelineColorBlendAttachmentState color_blend_attachment = {
+		true,
+		vk::BlendFactor::eSrcAlpha,
+		vk::BlendFactor::eOneMinusSrcAlpha,
+		vk::BlendOp::eAdd,
+		vk::BlendFactor::eOne,
+		vk::BlendFactor::eZero,
+		vk::BlendOp::eAdd,
+		(
+			vk::ColorComponentFlagBits::eR |
+			vk::ColorComponentFlagBits::eG |
+			vk::ColorComponentFlagBits::eB |
+			vk::ColorComponentFlagBits::eA
+		)
+	};
+
+	vk::PipelineColorBlendStateCreateInfo color_blend_state_create_info = {
+		{},
+		false,
+		vk::LogicOp::eCopy,
+		1,
+		&color_blend_attachment,
+		{
+			0, 0, 0, 0
+		}
+	};
+
+	vk::PipelineLayoutCreateInfo pipeline_layout_create_info = {
+		{},
+		0,
+		nullptr,
+		0,
+		nullptr
+	};
+
+	raii::PipelineLayout pipeline_layout = {
+		device,
+		pipeline_layout_create_info
+	};
+
+	return std::move(pipeline_layout);
+}
+
+
+
 void start() {
 	// ---------- Init window ----------
 
