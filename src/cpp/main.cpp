@@ -638,7 +638,7 @@ void start() {
 
 	auto shader_pipeline_out = create_graphics_pipeline(device);
 
-	raii::RenderPass render_pass = create_render_pass(device, surface_format);
+	auto [ render_pass, attachment ] = create_render_pass(device, surface_format);
 
 	raii::PipelineLayout pipeline_layout = configure_graphics_pipeline(surface_extent, device);
 
