@@ -619,7 +619,7 @@ auto create_swapchain_framebuffers(
 		vk::FramebufferCreateInfo create_info = {
 			{},
 			render_pass,
-			1,
+			static_cast<uint32_t>(attachments.size()),
 			attachments.data(),
 			extent.width,
 			extent.height,
