@@ -635,6 +635,52 @@ auto create_swapchain_framebuffers(
 	return std::move(framebuffers);
 }
 
+
+
+void record_command_buffer(
+	const raii::CommandBuffer & command_buffer,
+	const unsigned int image_index,
+	const raii::RenderPass & render_pass,
+	const std::vector<raii::Framebuffer> & framebuffers,
+	const vk::Extent2D extent,
+	const raii::Pipeline &pipeline
+) {
+	command_buffer.begin({{}, nullptr});
+
+	vk::ClearValue clear_color = { vk::ClearColorValue{ 0.0f, 0.0f, 1.0f, 1.0f }};
+
+	const vk::Rect2D scissor = {
+		{0, 0},
+		{extent.width, extent.height}
+	};
+
+	const vk::Viewport viewport = {
+		0, 0,
+		static_cast<float>(extent.width),
+		static_cast<float>(extent.height),
+		0, 1
+	};
+
+	command_buffer.beginRenderPass(
+		{
+			render_pass,
+			framebuffers[image_index],
+			{ 0, extent },
+			1,
+			&clear_color
+		},
+		vk::SubpassContents::eInline
+	);
+	command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+	command_buffer.setViewport(0, viewport);
+	command_buffer.setScissor(0, scissor);
+	command_buffer.draw(3, 1, 0, 0);
+	command_buffer.endRenderPass();
+	command_buffer.end();
+}
+
+
+
 void start() {
 	// ---------- Init window ----------
 
