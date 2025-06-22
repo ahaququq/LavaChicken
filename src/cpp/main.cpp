@@ -565,7 +565,38 @@ auto configure_graphics_pipeline(
 		pipeline_layout_create_info
 	};
 
-	return std::move(pipeline_layout);
+	std::vector shader_stages = {
+		graphics_pipeline_info.cvert,
+		graphics_pipeline_info.cfrag,
+	};
+
+	vk::GraphicsPipelineCreateInfo pipeline_create_info = {
+		{},
+		static_cast<uint32_t>(shader_stages.size()),
+		shader_stages.data(),
+		&vertex_input_state_create_info,
+		&assembly_state_create_info,
+		nullptr,
+		&pipeline_viewport_state_create_info,
+		&rasterization_state_create_info,
+		&multisample_state_create_info,
+		nullptr,
+		&color_blend_state_create_info,
+		&dynamic_state_create_info,
+		pipeline_layout,
+		render_pass,
+		0,
+		nullptr,
+		-1
+	};
+
+	raii::Pipeline pipeline = {
+		device,
+		nullptr,
+		pipeline_create_info
+	};
+
+	return std::pair{std::move(pipeline_layout), std::move(pipeline)};
 }
 
 
