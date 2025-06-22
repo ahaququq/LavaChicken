@@ -455,7 +455,9 @@ auto create_render_pass(const raii::Device &device, const vk::Format surface_for
 
 auto configure_graphics_pipeline(
 	vk::Extent2D surface_extent,
-	const raii::Device &device
+	const raii::Device &device,
+	const graphics_pipeline_creation_info& graphics_pipeline_info,
+	const raii::RenderPass &render_pass
 ) {
 	std::vector<vk::DynamicState> dynamic_states = {
 		vk::DynamicState::eViewport,
