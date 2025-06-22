@@ -604,6 +604,8 @@ void start() {
 
 	raii::RenderPass render_pass = create_render_pass(device, surface_format);
 
+	raii::PipelineLayout pipeline_layout = configure_graphics_pipeline(surface_extent, device);
+
 
 
 	// ---------- Main Loop ----------
