@@ -691,6 +691,24 @@ void start() {
 		attachment
 	);
 
+	vk::CommandPoolCreateInfo command_pool_create_info = {
+		vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+		queue_indices.queue_family_indices[vk::QueueFlagBits::eGraphics]
+	};
+
+	raii::CommandPool command_pool = { device, command_pool_create_info };
+
+	vk::CommandBufferAllocateInfo command_buffer_allocate_info = {
+		command_pool,
+		vk::CommandBufferLevel::ePrimary,
+		1
+	};
+
+	raii::CommandBuffer command_buffer = nullptr;
+	{
+		auto command_buffers = device.allocateCommandBuffers(command_buffer_allocate_info);
+		command_buffer = std::move(command_buffers[0]);
+	}
 
 
 	// ---------- Main Loop ----------
