@@ -347,6 +347,52 @@ auto create_swapchain_image_views(const raii::Device &device, const vk::Format &
 
 
 
+auto create_shader_module(const std::vector<char> &code, const raii::Device &device) {
+	vk::ShaderModuleCreateInfo shader_module_create_info{
+		{},
+		code.size(),
+		reinterpret_cast<const uint32_t *>(code.data())
+	};
+
+	return std::move(raii::ShaderModule{device, shader_module_create_info});
+}
+
+
+
+auto create_graphics_pipeline(const raii::Device &device) {
+	const auto vert_code = readFile("shader.vert.spv");
+	const auto frag_code = readFile("shader.frag.spv");
+
+	auto vert_shader_module = create_shader_module(vert_code, device);
+	auto frag_shader_module = create_shader_module(frag_code, device);
+
+	const vk::PipelineShaderStageCreateInfo vert_create_info{
+		{},
+		vk::ShaderStageFlagBits::eVertex,
+		vert_shader_module,
+		"main"
+	};
+
+	const vk::PipelineShaderStageCreateInfo frag_create_info{
+		{},
+		vk::ShaderStageFlagBits::eFragment,
+		frag_shader_module,
+		"main"
+	};
+
+
+	return std::tuple{
+		std::move(vert_shader_module),
+		std::move(frag_shader_module),
+		std::array{
+			vert_create_info,
+			frag_create_info
+		}
+	};
+}
+
+
+
 auto create_render_pass(const raii::Device &device, const vk::Format surface_format) {
 	vk::AttachmentDescription color_attachment{
 			{},
