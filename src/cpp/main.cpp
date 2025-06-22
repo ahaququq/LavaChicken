@@ -395,37 +395,38 @@ auto create_graphics_pipeline(const raii::Device &device) {
 
 auto create_render_pass(const raii::Device &device, const vk::Format surface_format) {
 	vk::AttachmentDescription color_attachment{
-			{},
-			surface_format,
-			vk::SampleCountFlagBits::e1,
-			vk::AttachmentLoadOp::eClear,
-			vk::AttachmentStoreOp::eStore,
-			vk::AttachmentLoadOp::eDontCare,
-			vk::AttachmentStoreOp::eDontCare,
-			vk::ImageLayout::eUndefined,
-			vk::ImageLayout::ePresentSrcKHR
-		};
+	{},
+		surface_format,
+		vk::SampleCountFlagBits::e1,
+		vk::AttachmentLoadOp::eClear,
+		vk::AttachmentStoreOp::eStore,
+		vk::AttachmentLoadOp::eDontCare,
+		vk::AttachmentStoreOp::eDontCare,
+		vk::ImageLayout::eUndefined,
+		vk::ImageLayout::ePresentSrcKHR
+	};
 
 	vk::AttachmentReference color_attachment_ref{
-		0, vk::ImageLayout::eAttachmentOptimal
+		0,
+		vk::ImageLayout::eAttachmentOptimal
 	};
 
 	vk::SubpassDescription subpass{
-			{},
-			vk::PipelineBindPoint::eGraphics,
-			0,
-			{},
-			1,
-			&color_attachment_ref
-		};
+		{},
+		vk::PipelineBindPoint::eGraphics,
+		0,
+		{},
+		1,
+		&color_attachment_ref
+	};
 
 	vk::RenderPassCreateInfo render_pass_create_info{
-			{},
-			1,
-			&color_attachment,
-			1,
-			&subpass
-		};
+		{},
+		1,
+		&color_attachment,
+		1,
+		&subpass
+	};
 
 	raii::RenderPass render_pass{
 		device,
