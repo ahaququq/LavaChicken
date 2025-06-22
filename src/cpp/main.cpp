@@ -681,6 +681,8 @@ void start() {
 		render_pass
 	);
 
+
+	
 	std::vector<raii::Framebuffer> swapchainFrameBuffers = create_swapchain_framebuffers(
 		device,
 		swapchain_image_views,
