@@ -600,6 +600,40 @@ auto configure_graphics_pipeline(
 }
 
 
+auto create_swapchain_framebuffers(
+	const raii::Device & device,
+	const std::vector<raii::ImageView> & swapchain_image_views,
+	const raii::RenderPass & render_pass,
+	vk::Extent2D extent,
+	const vk::AttachmentDescription & attachment
+) {
+	std::vector<raii::Framebuffer> framebuffers;
+
+	framebuffers.resize(swapchain_image_views.size());
+
+	for (unsigned long i = 0; i < swapchain_image_views.size(); i++) {
+		std::vector<vk::ImageView> attachments = {
+			swapchain_image_views[i]
+		};
+
+		vk::FramebufferCreateInfo create_info = {
+			{},
+			render_pass,
+			1,
+			attachments.data(),
+			extent.width,
+			extent.height,
+			1
+		};
+
+		framebuffers[i] = raii::Framebuffer{
+			device,
+			create_info
+		};
+	}
+
+	return std::move(framebuffers);
+}
 
 void start() {
 	// ---------- Init window ----------
@@ -640,7 +674,20 @@ void start() {
 
 	auto [ render_pass, attachment ] = create_render_pass(device, surface_format);
 
-	raii::PipelineLayout pipeline_layout = configure_graphics_pipeline(surface_extent, device);
+	auto [ pipeline_layout, pipeline ] = configure_graphics_pipeline(
+		surface_extent,
+		device,
+		shader_pipeline_out,
+		render_pass
+	);
+
+	std::vector<raii::Framebuffer> swapchainFrameBuffers = create_swapchain_framebuffers(
+		device,
+		swapchain_image_views,
+		render_pass,
+		surface_extent,
+		attachment
+	);
 
 
 
