@@ -609,11 +609,11 @@ auto create_swapchain_framebuffers(
 ) {
 	std::vector<raii::Framebuffer> framebuffers;
 
-	framebuffers.resize(swapchain_image_views.size());
+	framebuffers.reserve(swapchain_image_views.size());
 
-	for (unsigned long i = 0; i < swapchain_image_views.size(); i++) {
+	for (const auto & swapchain_image_view : swapchain_image_views) {
 		std::vector<vk::ImageView> attachments = {
-			swapchain_image_views[i]
+			swapchain_image_view
 		};
 
 		vk::FramebufferCreateInfo create_info = {
@@ -626,10 +626,10 @@ auto create_swapchain_framebuffers(
 			1
 		};
 
-		framebuffers[i] = raii::Framebuffer{
+		framebuffers.emplace_back(
 			device,
 			create_info
-		};
+		);
 	}
 
 	return std::move(framebuffers);
