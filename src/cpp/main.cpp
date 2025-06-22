@@ -600,6 +600,8 @@ void start() {
 	std::vector<vk::Image> swap_chain_images = swapchain.getImages();
 	std::vector<raii::ImageView> swapchain_image_views = create_swapchain_image_views(device, surface_format, swap_chain_images);
 
+	auto shader_pipeline_out = create_graphics_pipeline(device);
+
 	raii::RenderPass render_pass = create_render_pass(device, surface_format);
 
 
