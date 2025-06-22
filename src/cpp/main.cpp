@@ -360,6 +360,15 @@ auto create_shader_module(const std::vector<char> &code, const raii::Device &dev
 
 
 
+struct graphics_pipeline_creation_info {
+	raii::ShaderModule vert;
+	raii::ShaderModule frag;
+	vk::PipelineShaderStageCreateInfo cvert;
+	vk::PipelineShaderStageCreateInfo cfrag;
+};
+
+
+
 auto create_graphics_pipeline(const raii::Device &device) {
 	const auto vert_code = readFile("shader.vert.spv");
 	const auto frag_code = readFile("shader.frag.spv");
@@ -381,15 +390,14 @@ auto create_graphics_pipeline(const raii::Device &device) {
 		"main"
 	};
 
-
-	return std::tuple{
+	graphics_pipeline_creation_info output = {
 		std::move(vert_shader_module),
 		std::move(frag_shader_module),
-		std::array{
-			vert_create_info,
-			frag_create_info
-		}
+		vert_create_info,
+		frag_create_info
 	};
+
+	return output;
 }
 
 
