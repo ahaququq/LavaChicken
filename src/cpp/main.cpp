@@ -445,7 +445,10 @@ auto create_render_pass(const raii::Device &device, const vk::Format surface_for
 		render_pass_create_info
 	};
 
-	return std::move(render_pass);
+	return std::pair{
+		std::move(render_pass),
+		color_attachment
+	};
 }
 
 
