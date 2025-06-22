@@ -280,12 +280,12 @@ vk::Extent2D choose_swap_extent(const vk::SurfaceCapabilitiesKHR& capabilities, 
 void create_swap_chain(
 	const	raii::PhysicalDevice	&physical_device,
 	const	raii::SurfaceKHR		&surface,
-			GLFWwindow				*window,
+	GLFWwindow				*window,
 	const	raii::Device			&device,
-			QueueIndices			queue_indices,
-			raii::SwapchainKHR		&swapchain_out,
-			vk::Format				&format_out,
-			vk::Extent2D			&extent_out
+	QueueIndices			queue_indices,
+	raii::SwapchainKHR		&swapchain_out,
+	vk::Format				&format_out,
+	vk::Extent2D			&extent_out
 ) {
 	const SwapChainSupportDetails support_details = query_swap_chain_support(physical_device, surface);
 
@@ -329,17 +329,20 @@ void create_swap_chain(
 
 
 
-auto create_swapchain_image_views(const raii::Device &device, const vk::Format &surface_format,
-								  const std::vector<vk::Image> &swap_chain_images) {
+auto create_swapchain_image_views(
+	const raii::Device &device,
+	const vk::Format &surface_format,
+	const std::vector<vk::Image> &swap_chain_images
+) {
 	std::vector<raii::ImageView> swapchain_image_views;
 
 	for (auto image: swap_chain_images) {
 		vk::ImageViewCreateInfo create_info{{},
-											image,
-											vk::ImageViewType::e2D,
-											surface_format,
-											{},
-											vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
+		image,
+		vk::ImageViewType::e2D,
+		surface_format,
+		{},
+		vk::ImageSubresourceRange{vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1}};
 		swapchain_image_views.emplace_back(device, create_info);
 	}
 
