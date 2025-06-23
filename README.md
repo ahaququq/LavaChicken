@@ -18,4 +18,4 @@ Currently, I have no idea if anything comes out of it
 - [ ] Generate an interesting mesh
 
 ## What will not happen:
-- Anything on non-linux devices (it may work, but compile it yourself)
+- Anything on non-linux devices (it may work, but compile it yourself, it may require some work)
