@@ -775,7 +775,6 @@ void start() {
 
 
 int main() {
-
 	try {
 		start();
 	} catch (const std::exception& e) {
