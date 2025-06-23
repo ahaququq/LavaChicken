@@ -826,6 +826,14 @@ void start() {
 		command_buffer = std::move(command_buffers[0]);
 	}
 
+	raii::Semaphore image_available_semaphore = {device, vk::SemaphoreCreateInfo{}};
+	raii::Semaphore rendering_finished_semaphore = {device, vk::SemaphoreCreateInfo{}};
+	raii::Fence in_flight_fence = {
+		device,
+		vk::FenceCreateInfo{
+			vk::FenceCreateFlagBits::eSignaled
+		}
+	};
 
 	// ---------- Main Loop ----------
 
