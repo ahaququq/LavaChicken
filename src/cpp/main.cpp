@@ -690,6 +690,67 @@ void record_command_buffer(
 
 
 
+void draw_frame(
+	const raii::Semaphore & image_available,
+	const raii::Semaphore & rendering_done,
+	const raii::Fence & in_flight,
+	const raii::Device & device,
+	const raii::SwapchainKHR &swapchain,
+	const raii::CommandBuffer &command_buffer,
+	const raii::RenderPass & render_pass,
+	const std::vector<raii::Framebuffer> &framebuffers,
+	const vk::Extent2D& extent,
+	const raii::Pipeline &pipeline,
+	const raii::Queue &graphics_queue
+) {
+	// ReSharper disable once CppNoDiscardExpression
+	device.waitForFences({in_flight}, true, -1);
+	device.resetFences({in_flight});
+
+	auto [result, image_index] = device.acquireNextImage2KHR(vk::AcquireNextImageInfoKHR{
+		swapchain,
+		-1U,
+		image_available,
+		nullptr,
+		0
+	});
+
+	command_buffer.reset({});
+	record_command_buffer(command_buffer, image_index, render_pass, framebuffers, extent, pipeline);
+
+	std::vector<vk::Semaphore> wait_semaphores = {image_available};
+	std::vector<vk::Semaphore> signal_semaphores = {rendering_done};
+	std::vector<vk::CommandBuffer> command_buffers = {command_buffer};
+
+	vk::PipelineStageFlags stage_flags = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+
+	graphics_queue.submit({vk::SubmitInfo{
+		static_cast<unsigned int>(wait_semaphores.size()),
+		wait_semaphores.data(),
+		&stage_flags,
+		static_cast<unsigned int>(command_buffers.size()),
+		command_buffers.data(),
+		static_cast<unsigned int>(signal_semaphores.size()),
+		signal_semaphores.data()
+	}}, in_flight);
+
+	std::vector<vk::SwapchainKHR> swapchains = {swapchain};
+
+	vk::PresentInfoKHR present_info = {
+		static_cast<uint32_t>(signal_semaphores.size()),
+		signal_semaphores.data(),
+		static_cast<uint32_t>(swapchains.size()),
+		swapchains.data(),
+		&image_index,
+		nullptr
+	};
+
+	// ReSharper disable once CppNoDiscardExpression
+	graphics_queue.presentKHR(present_info);
+}
+
+
+
 void start() {
 	// ---------- Init window ----------
 
@@ -770,6 +831,19 @@ void start() {
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
+		draw_frame(
+			image_available_semaphore,
+			rendering_finished_semaphore,
+			in_flight_fence,
+			device,
+			swapchain,
+			command_buffer,
+			render_pass,
+			swapchainFrameBuffers,
+			surface_extent,
+			pipeline,
+			graphicsQueue
+		);
 	}
 
 	// ---------- Cleanup ----------
