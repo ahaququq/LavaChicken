@@ -430,12 +430,23 @@ auto create_render_pass(const raii::Device &device, const vk::Format surface_for
 		&color_attachment_ref
 	};
 
+	vk::SubpassDependency dependency = {
+		vk::SubpassExternal,
+		0,
+		vk::PipelineStageFlagBits::eColorAttachmentOutput,
+		vk::PipelineStageFlagBits::eColorAttachmentOutput,
+		vk::AccessFlagBits::eNone,
+		vk::AccessFlagBits::eColorAttachmentWrite
+	};
+
 	vk::RenderPassCreateInfo render_pass_create_info{
 		{},
 		1,
 		&color_attachment,
 		1,
-		&subpass
+		&subpass,
+		1,
+		&dependency
 	};
 
 	raii::RenderPass render_pass{
