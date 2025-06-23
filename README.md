@@ -15,6 +15,7 @@ Currently, I have no idea if anything comes out of it
 - [ ] Get perspective working
 - [ ] Load a more interesting test mesh
 - [ ] Make it rotate
+- [ ] Generate an interesting mesh
 
 ## What will not happen:
 - Anything on non-linux devices
