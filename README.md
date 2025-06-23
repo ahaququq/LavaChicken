@@ -10,8 +10,11 @@ Currently, I have no idea if anything comes out of it
 ## Goals:
 - [x] Get `vulkan.hpp` to work
 - [x] Get a window to show up
-  - [ ] Make it render on Wayland
-- [ ] Show a triangle
+  - [x] Make it render on Wayland
+- [x] Show a triangle
+- [ ] Get perspective working
+- [ ] Load a more interesting test mesh
+- [ ] Make it rotate
 
 ## What will not happen:
 - Anything on non-linux devices
