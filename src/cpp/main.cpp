@@ -693,7 +693,7 @@ void start() {
 
 	vk::PhysicalDeviceProperties device_properties = physical_device.getProperties();
 	std::cout << "Chosen device: " << device_properties.deviceName
-			  << " (Type: " << static_cast<int>(device_properties.deviceType) << ")" << std::endl;
+		  << " (Type: " << static_cast<int>(device_properties.deviceType) << ")" << std::endl;
 
 	auto queue_indices = setup_queue_indices(physical_device, display_surface);
 
