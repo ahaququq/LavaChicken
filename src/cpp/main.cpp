@@ -656,7 +656,7 @@ void record_command_buffer(
 ) {
 	command_buffer.begin({{}, nullptr});
 
-	vk::ClearValue clear_color = { vk::ClearColorValue{ 0.0f, 0.0f, 1.0f, 1.0f }};
+	vk::ClearValue clear_color = { vk::ClearColorValue{ 0.1f, 0.1f, 0.1f, 1.0f }};
 
 	const vk::Rect2D scissor = {
 		{0, 0},
