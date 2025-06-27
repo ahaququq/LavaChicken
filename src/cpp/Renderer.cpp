@@ -1,5 +1,7 @@
 #include "Renderer.h"
 
+#include "text_formatting.h"
+
 namespace raii = vk::raii;
 
 constexpr std::vector<std::string> own_instance_extensions{
@@ -51,8 +53,6 @@ short Renderer::rank_score(const raii::PhysicalDevice &device) const {
 	vk::PhysicalDeviceProperties properties = device.getProperties();
 	const vk::PhysicalDeviceFeatures features = device.getFeatures();
 
-	std::cout << "Device: " << properties.deviceName << " (Type: " << static_cast<int>(properties.deviceType) << ")" << std::endl;
-
 	short score = 0;
 
 	if (properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu) {
@@ -77,6 +77,8 @@ short Renderer::rank_score(const raii::PhysicalDevice &device) const {
 
 
 void Renderer::choose_physical_device() {
+	wnd::begin_section("Physical device: ");
+
 	std::vector<raii::PhysicalDevice> physical_devices = instance.enumeratePhysicalDevices();
 
 	std::multimap<short, raii::PhysicalDevice &> ranked_devices;
@@ -90,6 +92,22 @@ void Renderer::choose_physical_device() {
 	if (ranked_devices.empty()) {
 		throw std::runtime_error("No suitable GPU found");
 	}
+
+	wnd::begin_frame("Suitable GPUs:");
+
+	bool first = true;
+
+	for (std::pair<const short, const raii::PhysicalDevice &> device: ranked_devices) {
+		wnd::print(
+			std::string{first ? ">T" : " T"}
+			+ std::to_string(static_cast<int>(device.second.getProperties().deviceType))
+			+ ", " + wnd::set_length(std::to_string(-device.first), 5) + " points - "
+			+ std::string{device.second.getProperties().deviceName}
+			+ std::string{first ? "<" : ""});
+		first = false;
+	}
+
+	wnd::end_frame();
 
 	physical_device = std::move(ranked_devices.begin()->second);
 }
@@ -105,7 +123,7 @@ void Renderer::create_display_surface() {
 
 
 void Renderer::create_vulkan_instance() {
-	std::cout << "Creating Vulkan instance...\n";
+	wnd::begin_section("Vulkan instance:");
 
 	unsigned int glfwExtensionCount = 0;
 	const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -113,34 +131,32 @@ void Renderer::create_vulkan_instance() {
 
 	std::unordered_set<const char *> extensions;
 
-	std::cout << "/- GLFW required extensions: ---\n";
+	wnd::begin_frame("GLFW required extensions:");
 	for (int i = 0; i < glfwExtensionCount; i++) {
 		const char *glfwExtensionsPointer = *glfwExtensionsCopy;
 		extensions.insert(glfwExtensionsPointer);
-		std::cout << "| + " << glfwExtensionsPointer << "\n";
+		wnd::print(std::string{"+ "} + glfwExtensionsPointer);
 		glfwExtensionsCopy++;
 	}
-	std::cout << "\\-------------------------------\n\n";
+	wnd::end_frame();
 
-	std::cout << "/- LavaChicken required extensions: ---\n";
+	wnd::begin_frame("LavaChicken required extensions:");
 	for (const std::string &extension: own_instance_extensions) {
 		const char *name = extension.c_str();
-		std::cout << (extensions.insert(name).second ? "| + " : "| ~ ");
-		std::cout << extension << "\n";
+		wnd::print((extensions.insert(name).second ? "+ " : "~ ") + extension);
 	}
-	std::cout << "\\--------------------------------------\n\n";
+	wnd::end_frame();
 	const std::vector<const char *> extensions_vector = {extensions.begin(), extensions.end()};
 
 
 	std::unordered_set<const char *> layers;
 
-	std::cout << "/- LavaChicken required layers: ---\n";
+	wnd::begin_frame("LavaChicken required layers:");
 	for (const std::string &layer: own_instance_layers) {
 		const char *name = layer.c_str();
-		std::cout << (extensions.insert(name).second ? "| + " : "| ~ ");
-		std::cout << layer << "\n";
+		wnd::print((layers.insert(name).second ? "+ " : "~ ") + layer);
 	}
-	std::cout << "\\----------------------------------\n\n";
+	wnd::end_frame();
 	const std::vector<const char *> layers_vector = {layers.begin(), layers.end()};
 
 
@@ -172,24 +188,66 @@ void Renderer::create_window() {
 	glfwWindowHint(GLFW_RESIZABLE, false);
 
 	window = glfwCreateWindow(WIDTH, HEIGHT, "LavaChicken main window", nullptr, nullptr);
-	std::cout << "Created window: \n";
-	std::cout << "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┯━━━┯━━━┯━━━┓\n";
-	std::cout << "┃ LavaChicken main window     │ - │ □ │ X ┃\n";
-	std::cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━┷━━━┷━━━┫\n";
+	wnd::begin("LavaChicken debug console", wnd::all_buttons, 64);
+	wnd::begin_section("Window:");
+	wnd::begin_frame("Requested:");
+	wnd::print(std::string{"Width:   "} + std::to_string(WIDTH));
+	wnd::print(std::string{"Height:  "} + std::to_string(HEIGHT));
+	wnd::print(std::string{"Monitor: "} + "N/A");
+	wnd::end_frame();
+
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+
+	wnd::begin_frame("Got:");
+	wnd::print(std::string{"Width:   "} + std::to_string(width));
+	wnd::print(std::string{"Height:  "} + std::to_string(height));
+
+	auto monitor = glfwGetWindowMonitor(window);
+	if (monitor) {
+		int monitor_width, monitor_height;
+		glfwGetMonitorPhysicalSize(monitor, &monitor_width, &monitor_height);
+		float scale_x, scale_y;
+		glfwGetMonitorContentScale(monitor, &scale_x, &scale_y);
+		int pos_x, pos_y;
+		glfwGetMonitorPos(monitor, &pos_x, &pos_y);
+		int work_x, work_y, work_width, work_height;
+		glfwGetMonitorWorkarea(monitor, &work_x, &work_y, &work_width, &work_height);
+
+		wnd::begin_frame("Monitor: ");
+		wnd::print(std::string{"Name:             "} + glfwGetMonitorName(monitor));
+		wnd::print(std::string{"Width:            "} + std::to_string(monitor_width) + "mm");
+		wnd::print(std::string{"Height:           "} + std::to_string(monitor_height) + "mm");
+		wnd::print(std::string{"Scale X:          "} + std::to_string(scale_x));
+		wnd::print(std::string{"Scale Y:          "} + std::to_string(scale_y));
+		wnd::print(std::string{"Position X:       "} + std::to_string(pos_x));
+		wnd::print(std::string{"Position Y:       "} + std::to_string(pos_y));
+		wnd::print(std::string{"Work area X:      "} + std::to_string(work_x));
+		wnd::print(std::string{"Work area Y:      "} + std::to_string(work_y));
+		wnd::print(std::string{"Work area width:  "} + std::to_string(work_width));
+		wnd::print(std::string{"Work area height: "} + std::to_string(work_height));
+	} else {
+		wnd::print(std::string{"Monitor: "} + "N/A");
+	}
+
+	wnd::end_frame();
+
+	wnd::end_frame();
+	wnd::print();
 }
 
 
 
 Renderer::Renderer(): instance(nullptr), display_surface(nullptr), physical_device(nullptr) {
+	std::cout << "\n\n\n";
+
 	create_window();
 	context = {}; // Setup context :)
 	create_vulkan_instance();
 	create_display_surface();
 	choose_physical_device();
 
-	vk::PhysicalDeviceProperties device_properties = physical_device.getProperties();
-	std::cout << "Chosen device: " << device_properties.deviceName
-		  << " (Type: " << static_cast<int>(device_properties.deviceType) << ")" << std::endl;
+	std::cout << "\n\n\n";
 }
 
 
