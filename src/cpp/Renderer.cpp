@@ -172,6 +172,10 @@ void Renderer::create_window() {
 	glfwWindowHint(GLFW_RESIZABLE, false);
 
 	window = glfwCreateWindow(WIDTH, HEIGHT, "LavaChicken main window", nullptr, nullptr);
+	std::cout << "Created window: \n";
+	std::cout << "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┯━━━┯━━━┯━━━┓\n";
+	std::cout << "┃ LavaChicken main window     │ - │ □ │ X ┃\n";
+	std::cout << "┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┷━━━┷━━━┷━━━┫\n";
 }
 
 
