@@ -35,6 +35,8 @@ add_custom_target( Shaders
 )
 
 # link Vulkan C++ module into your project
-add_executable( LavaChicken src/cpp/main.cpp)
+add_executable( LavaChicken src/cpp/main.cpp
+        src/cpp/Renderer.cpp
+        src/cpp/Renderer.h)
 target_link_libraries( LavaChicken PRIVATE VulkanHppModule glfw glm::glm )
 add_dependencies( LavaChicken Shaders)
