@@ -2,6 +2,8 @@
 > *Lava is lame, Vulkan is like a volcano.*  
 > *I don't know a name. Fortepiano*
 
+![Hackatime Badge](https://hackatime-badge.hackclub.com/U091YATPU74/LavaChicken)
+
 ## What is it?
 
 It's a simple "game engine" based on the Vulkan graphics API.
