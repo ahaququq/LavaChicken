@@ -73,7 +73,10 @@ private:
 	};
 
 	const std::vector<std::string> own_device_layers{
-		// Layer names, Are they the same thing?
+		vk::KHRSwapchainExtensionName,
+		vk::KHRSpirv14ExtensionName,
+		vk::KHRSynchronization2ExtensionName,
+		vk::KHRCreateRenderpass2ExtensionName
 	};
 
 	const std::vector<const char *> device_extensions = {
