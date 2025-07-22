@@ -273,30 +273,30 @@ void Renderer::get_queue_indices() {
 
 		vk::QueueFlags flags = property.queueFlags;
 		if (flags & vk::QueueFlagBits::eGraphics) {
-			graphics_queue = i;
+			graphics_queue_index = i;
 			wnd::print("Graphics");
 		}
 		if (flags & vk::QueueFlagBits::eCompute) {
-			compute_queue = i;
+			compute_queue_index = i;
 			wnd::print("Compute");
 		}
 		if (flags & vk::QueueFlagBits::eTransfer) wnd::print("Transfer");
 		if (flags & vk::QueueFlagBits::eSparseBinding) wnd::print("SparseBinding");
 		if (flags & vk::QueueFlagBits::eProtected) wnd::print("Protected");
 		if (flags & vk::QueueFlagBits::eVideoDecodeKHR) {
-			decode_queue = i;
+			decode_queue_index = i;
 			wnd::print("Decode");
 		}
 		if (flags & vk::QueueFlagBits::eVideoEncodeKHR) {
-			encode_queue = i;
+			encode_queue_index = i;
 			wnd::print("Encode");
 		}
 		if (flags & vk::QueueFlagBits::eOpticalFlowNV) {
-			optical_flow_queue = i;
+			optical_flow_queue_index = i;
 			wnd::print("Optical Flow");
 		}
 		if (physical_device.getSurfaceSupportKHR(i, display_surface)) {
-			present_queue = i;
+			present_queue_index = i;
 			wnd::print("Present");
 		}
 		wnd::end_frame();
@@ -313,8 +313,8 @@ void Renderer::create_logical_device() {
 	vk::PhysicalDeviceFeatures physical_device_features;
 
 	const std::set unique_queues = {
-		graphics_queue,
-		present_queue
+		graphics_queue_index,
+		present_queue_index
 	};
 
 	constexpr float queue_priority = 1.0f;
@@ -363,6 +363,9 @@ void Renderer::create_logical_device() {
 	};
 
 	device = {physical_device, device_create_info};
+
+	graphics_queue = raii::Queue{device, graphics_queue_index, 0};
+	graphics_queue_index = 0; // Reuse
 
 	wnd::print();
 }

@@ -27,12 +27,13 @@ private:
 	raii::Instance instance{nullptr};
 	raii::SurfaceKHR display_surface{nullptr};
 	raii::PhysicalDevice physical_device{nullptr};
-	unsigned int graphics_queue{};
-	unsigned int compute_queue{};
-	unsigned int decode_queue{};
-	unsigned int encode_queue{};
-	unsigned int optical_flow_queue{};
-	unsigned int present_queue{};
+	unsigned int graphics_queue_index{};
+	unsigned int compute_queue_index{};
+	unsigned int decode_queue_index{};
+	unsigned int encode_queue_index{};
+	unsigned int optical_flow_queue_index{};
+	unsigned int present_queue_index{};
+	raii::Queue graphics_queue{nullptr};
 	raii::Device device{nullptr};
 
 	[[nodiscard]] bool has_extensions(const raii::PhysicalDevice &device) const;
