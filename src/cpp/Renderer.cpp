@@ -330,7 +330,7 @@ void Renderer::create_logical_device() {
 
 	// Create a chain of feature structures
 	vk::StructureChain featureChain = {
-		vk::PhysicalDeviceFeatures2{},                               // vk::PhysicalDeviceFeatures2 (empty for now)
+		physical_device.getFeatures2(), // vk::PhysicalDeviceFeatures2 (empty for now)
 		vk::PhysicalDeviceVulkan13Features{
 			false,
 			false,
