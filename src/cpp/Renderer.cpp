@@ -82,6 +82,11 @@ void Renderer::choose_physical_device() {
 
 	std::vector<raii::PhysicalDevice> physical_devices = instance.enumeratePhysicalDevices();
 
+	if (physical_devices.empty()) {
+		wnd::print("None");
+		throw std::runtime_error("failed to find GPUs with Vulkan support!");
+	}
+
 	std::multimap<short, raii::PhysicalDevice &> ranked_devices;
 
 	for (raii::PhysicalDevice& device: physical_devices) {
