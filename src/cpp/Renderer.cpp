@@ -148,6 +148,7 @@ void Renderer::create_vulkan_instance() {
 	const std::vector<const char *> layers_vector = {layers.begin(), layers.end()};
 
 
+	wnd::begin_frame("Unsupported extensions:");
 	bool unsupportedExtensions = false;
 	auto extensionProperties = context.enumerateInstanceExtensionProperties();
 	for (auto extension : extensions_vector)
@@ -161,6 +162,8 @@ void Renderer::create_vulkan_instance() {
 		}
 	}
 	if (unsupportedExtensions) throw std::runtime_error("Required GLFW extension not supported.");
+	wnd::print("None :)");
+	wnd::end_frame();
 
 
 	instance = raii::Instance{
