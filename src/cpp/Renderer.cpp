@@ -154,8 +154,8 @@ void Renderer::create_vulkan_instance() {
 	for (auto extension : extensions_vector)
 	{
 		if (std::ranges::none_of(extensionProperties,
-			[ext = extension](auto const& extensionProperty)
-			{ return strcmp(extensionProperty.extensionName, ext) == 0; }
+			[extension](auto const& extensionProperty)
+			{ return strcmp(extensionProperty.extensionName, extension) == 0; }
 		)) {
 			unsupportedExtensions = true;
 			wnd::print(std::string("- ") + extension);
