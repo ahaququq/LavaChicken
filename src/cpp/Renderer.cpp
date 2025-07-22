@@ -36,7 +36,7 @@ Renderer::SwapchainSupportDetails Renderer::query_swap_chain_support(const raii:
 
 
 short Renderer::rank_score(const raii::PhysicalDevice &device) const {
-	vk::PhysicalDeviceProperties properties = device.getProperties();
+	const vk::PhysicalDeviceProperties properties = device.getProperties();
 	const vk::PhysicalDeviceFeatures features = device.getFeatures();
 
 	short score = 0;
