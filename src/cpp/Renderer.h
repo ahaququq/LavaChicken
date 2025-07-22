@@ -72,10 +72,6 @@ private:
 #endif
 	};
 
-	const std::vector<std::string> own_device_layers{
-		// WHAT IS THIS THING
-	};
-
 	const std::vector<const char *> device_extensions = {
 		vk::KHRSwapchainExtensionName,
 		vk::KHRSpirv14ExtensionName,
