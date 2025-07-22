@@ -76,7 +76,7 @@ void Renderer::choose_physical_device() {
 	std::multimap<short, raii::PhysicalDevice &> ranked_devices;
 
 	for (raii::PhysicalDevice& device: physical_devices) {
-		short score = rank_score(device);
+		const short score = rank_score(device);
 		if (score == INT16_MIN) continue;
 		ranked_devices.insert(std::pair<short, raii::PhysicalDevice&>(-score, device));
 	}
