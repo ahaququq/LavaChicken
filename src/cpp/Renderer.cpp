@@ -170,9 +170,9 @@ void Renderer::create_vulkan_instance() {
 	auto layerProperties = context.enumerateInstanceLayerProperties();
 	for (auto layer : layers_vector)
 	{
-		if (std::ranges::none_of(extensionProperties,
+		if (std::ranges::none_of(layerProperties,
 			[layer](auto const& layerProperty)
-			{ return strcmp(layerProperty.extensionName, layer) == 0; }
+			{ return strcmp(layerProperty.layerName, layer) == 0; }
 		)) {
 			unsupportedLayers = true;
 			wnd::print(std::string("- ") + layer);
