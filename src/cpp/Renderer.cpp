@@ -38,6 +38,7 @@ Renderer::SwapchainSupportDetails Renderer::query_swap_chain_support(const raii:
 short Renderer::rank_score(const raii::PhysicalDevice &device) const {
 	const vk::PhysicalDeviceProperties properties = device.getProperties();
 	const vk::PhysicalDeviceFeatures features = device.getFeatures();
+	std::vector<vk::ExtensionProperties> extensions = device.enumerateDeviceExtensionProperties();
 
 	short score = 0;
 
@@ -52,6 +53,19 @@ short Renderer::rank_score(const raii::PhysicalDevice &device) const {
 	if (!features.geometryShader) return INT16_MIN;
 	if (!has_extensions(device)) return INT16_MIN;
 	if (properties.apiVersion < vk::ApiVersion13) return INT16_MIN;
+
+	bool has_extensions = true;
+
+	for (const char *extension : device_extensions) {
+		bool has_extension = false;
+		for (vk::ExtensionProperties extension_properties : extensions) {
+			if (strcmp(extension, extension_properties.extensionName)) {
+				has_extension = true;
+			}
+		}
+		if (!has_extension) has_extensions = false;
+	}
+	if (!has_extensions) return INT16_MIN;
 
 	const SwapchainSupportDetails swap_chain_support = query_swap_chain_support(device);
 
