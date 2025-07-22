@@ -165,7 +165,7 @@ void Renderer::create_vulkan_instance() {
 	wnd::print("None :)");
 	wnd::end_frame();
 
-	wnd::begin_frame("Unsupported extensions:");
+	wnd::begin_frame("Unsupported layers:");
 	bool unsupportedLayers = false;
 	auto layerProperties = context.enumerateInstanceLayerProperties();
 	for (auto layer : layers_vector)
