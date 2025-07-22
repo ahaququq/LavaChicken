@@ -67,6 +67,9 @@ private:
 
 	const std::vector<std::string> own_instance_layers{
 		// Layer names
+#ifndef NDEBUG
+		"VK_LAYER_KHRONOS_validation" // Debug only
+#endif
 	};
 
 	const std::vector<std::string> own_device_layers{
