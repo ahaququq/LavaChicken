@@ -379,6 +379,49 @@ void Renderer::create_logical_device() {
 
 
 
+vk::SurfaceFormatKHR Renderer::choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR>& availableFormats) {
+	for (const auto format : availableFormats) {
+		if (format.format == vk::Format::eB8G8R8A8Srgb && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear) {
+			return format;
+		}
+	}
+
+	return availableFormats[0];
+}
+
+
+
+vk::PresentModeKHR Renderer::choose_swap_present_mode(const std::vector<vk::PresentModeKHR>& availablePresentModes) {
+	for (const auto& availablePresentMode : availablePresentModes) {
+		if (availablePresentMode == vk::PresentModeKHR::eMailbox) {
+			return availablePresentMode;
+		}
+	}
+
+	return vk::PresentModeKHR::eFifo;
+}
+
+
+
+vk::Extent2D Renderer::choose_swap_extent(const vk::SurfaceCapabilitiesKHR& capabilities, GLFWwindow* window) {
+	if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+		return capabilities.currentExtent;
+
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);
+
+	vk::Extent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+
+	actualExtent.width =
+			std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+	actualExtent.height =
+			std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+	return actualExtent;
+}
+
+
+
 void Renderer::create_swapchain() {
 	
 }
