@@ -63,7 +63,7 @@ short Renderer::rank_score(const raii::PhysicalDevice &device) const {
 
 
 void Renderer::choose_physical_device() {
-	wnd::begin_section("Physical device: ");
+	wnd::begin_section("Physical devices: ");
 
 	std::vector<raii::PhysicalDevice> physical_devices = instance.enumeratePhysicalDevices();
 
