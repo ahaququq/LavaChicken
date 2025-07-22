@@ -77,7 +77,10 @@ private:
 	};
 
 	const std::vector<const char *> device_extensions = {
-		vk::KHRSwapchainExtensionName
+		vk::KHRSwapchainExtensionName,
+		vk::KHRSpirv14ExtensionName,
+		vk::KHRSynchronization2ExtensionName,
+		vk::KHRCreateRenderpass2ExtensionName
 	};
 
 	static constexpr unsigned int WIDTH = 800;
