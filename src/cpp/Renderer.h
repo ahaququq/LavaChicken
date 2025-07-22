@@ -35,8 +35,8 @@ private:
 	unsigned int present_queue;
 	raii::Device device;
 
-	bool has_extensions(const raii::PhysicalDevice &device) const;
-	short rank_score(const raii::PhysicalDevice &device) const;
+	[[nodiscard]] bool has_extensions(const raii::PhysicalDevice &device) const;
+	[[nodiscard]] short rank_score(const raii::PhysicalDevice &device) const;
 	void choose_physical_device();
 	void create_display_surface();
 	void create_vulkan_instance();
@@ -50,7 +50,7 @@ private:
 		std::vector<vk::PresentModeKHR> presentModes;
 	};
 
-	SwapchainSupportDetails query_swap_chain_support(const raii::PhysicalDevice& device) const;
+	[[nodiscard]] SwapchainSupportDetails query_swap_chain_support(const raii::PhysicalDevice& device) const;
 
 
 
