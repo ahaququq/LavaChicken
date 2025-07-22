@@ -45,6 +45,7 @@ private:
 	void create_window();
 	void get_queue_indices();
 	void create_logical_device();
+	void create_swapchain();
 
 	struct SwapchainSupportDetails {
 		vk::SurfaceCapabilitiesKHR capabilities;

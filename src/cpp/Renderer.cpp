@@ -379,6 +379,12 @@ void Renderer::create_logical_device() {
 
 
 
+void Renderer::create_swapchain() {
+	
+}
+
+
+
 Renderer::Renderer() {
 	std::cout << "\n\n\n";
 
@@ -389,6 +395,7 @@ Renderer::Renderer() {
 	choose_physical_device();
 	get_queue_indices();
 	create_logical_device();
+	create_swapchain();
 
 	std::cout << "\n\n\n";
 }
