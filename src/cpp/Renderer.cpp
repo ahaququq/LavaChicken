@@ -161,7 +161,7 @@ void Renderer::create_vulkan_instance() {
 			wnd::print(std::string("- ") + extension);
 		}
 	}
-	if (unsupportedExtensions) throw std::runtime_error("Required GLFW extension not supported.");
+	if (unsupportedExtensions) throw std::runtime_error("Required extension not supported.");
 	wnd::print("None :)");
 	wnd::end_frame();
 
