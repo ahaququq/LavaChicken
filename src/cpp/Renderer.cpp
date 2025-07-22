@@ -165,6 +165,23 @@ void Renderer::create_vulkan_instance() {
 	wnd::print("None :)");
 	wnd::end_frame();
 
+	wnd::begin_frame("Unsupported extensions:");
+	bool unsupportedLayers = false;
+	auto layerProperties = context.enumerateInstanceLayerProperties();
+	for (auto layer : layers_vector)
+	{
+		if (std::ranges::none_of(extensionProperties,
+			[layer](auto const& layerProperty)
+			{ return strcmp(layerProperty.extensionName, layer) == 0; }
+		)) {
+			unsupportedLayers = true;
+			wnd::print(std::string("- ") + layer);
+		}
+	}
+	if (unsupportedLayers) throw std::runtime_error("Required layer not supported.");
+	wnd::print("None :)");
+	wnd::end_frame();
+
 
 	instance = raii::Instance{
 		context,
