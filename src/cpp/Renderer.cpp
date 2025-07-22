@@ -327,24 +327,39 @@ void Renderer::create_logical_device() {
 	}
 	wnd::end_frame();
 
-	std::vector<const char*> enabled_layer_names = {};
-
-	wnd::begin_frame("LavaChicken device layers:");
-	for (const std::string &name : own_device_layers) {
-		enabled_layer_names.emplace_back(name.c_str());
-		wnd::print(std::string{"+ "} + name);
-	}
-	wnd::end_frame();
+	// Create a chain of feature structures
+	vk::StructureChain featureChain = {
+		vk::PhysicalDeviceFeatures2{},                               // vk::PhysicalDeviceFeatures2 (empty for now)
+		vk::PhysicalDeviceVulkan13Features{
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			true,
+			false,
+			false
+			},      // Enable dynamic rendering from Vulkan 1.3
+		vk::PhysicalDeviceExtendedDynamicStateFeaturesEXT{ true }   // Enable extended dynamic state from the extension
+	};
 
 	const vk::DeviceCreateInfo device_create_info{
 		{},
 		static_cast<uint32_t>(device_queue_create_infos.size()),
 		device_queue_create_infos.data(),
-		static_cast<uint32_t>(enabled_layer_names.size()),
-		enabled_layer_names.data(),
+		0,
+		nullptr,
 		static_cast<uint32_t>(device_extensions.size()),
 		device_extensions.data(),
-		&physical_device_features
+		nullptr,
+		featureChain.get<>()
 	};
 
 	device = {physical_device, device_create_info};
