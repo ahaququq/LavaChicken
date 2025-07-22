@@ -34,6 +34,7 @@ private:
 	unsigned int optical_flow_queue_index{};
 	unsigned int present_queue_index{};
 	raii::Queue graphics_queue{nullptr};
+	raii::Queue present_queue{nullptr};
 	raii::Device device{nullptr};
 
 	[[nodiscard]] bool has_extensions(const raii::PhysicalDevice &device) const;
