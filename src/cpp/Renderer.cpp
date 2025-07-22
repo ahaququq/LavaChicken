@@ -319,7 +319,7 @@ void Renderer::create_logical_device() {
 
 
 
-Renderer::Renderer(): instance(nullptr), display_surface(nullptr), physical_device(nullptr), device(nullptr) {
+Renderer::Renderer() {
 	std::cout << "\n\n\n";
 
 	create_window();

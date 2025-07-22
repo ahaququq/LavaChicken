@@ -24,16 +24,16 @@ public:
 private:
 	GLFWwindow *window{};
 	raii::Context context;
-	raii::Instance instance;
-	raii::SurfaceKHR display_surface;
-	raii::PhysicalDevice physical_device;
-	unsigned int graphics_queue;
-	unsigned int compute_queue;
-	unsigned int decode_queue;
-	unsigned int encode_queue;
-	unsigned int optical_flow_queue;
-	unsigned int present_queue;
-	raii::Device device;
+	raii::Instance instance{nullptr};
+	raii::SurfaceKHR display_surface{nullptr};
+	raii::PhysicalDevice physical_device{nullptr};
+	unsigned int graphics_queue{};
+	unsigned int compute_queue{};
+	unsigned int decode_queue{};
+	unsigned int encode_queue{};
+	unsigned int optical_flow_queue{};
+	unsigned int present_queue{};
+	raii::Device device{nullptr};
 
 	[[nodiscard]] bool has_extensions(const raii::PhysicalDevice &device) const;
 	[[nodiscard]] short rank_score(const raii::PhysicalDevice &device) const;
