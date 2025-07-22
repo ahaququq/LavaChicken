@@ -110,7 +110,8 @@ void Renderer::choose_physical_device() {
 
 void Renderer::create_display_surface() {
 	VkSurfaceKHR surface_khr;
-	glfwCreateWindowSurface(*instance, window, nullptr, &surface_khr);
+	if (glfwCreateWindowSurface(*instance, window, nullptr, &surface_khr))
+		throw std::runtime_error("failed to create window surface!");
 	display_surface = raii::SurfaceKHR{instance, surface_khr};
 }
 
