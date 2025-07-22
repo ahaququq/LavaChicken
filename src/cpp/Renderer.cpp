@@ -167,13 +167,7 @@ void Renderer::create_vulkan_instance() {
 		context,
 		vk::InstanceCreateInfo{
 			{},
-			new vk::ApplicationInfo{
-				"LavaChicken on Vulkan - Test App",
-				vk::makeApiVersion(1, 0, 0, 0),
-				"LavaChicken",
-				vk::makeApiVersion(1, 0, 0, 0),
-				vk::makeApiVersion(1, 0, 0, 0)
-			},
+			&appInfo,
 			static_cast<unsigned int>(layers_vector.size()),
 			layers_vector.data(),
 			static_cast<unsigned int>(extensions_vector.size()),

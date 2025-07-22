@@ -53,6 +53,13 @@ private:
 	[[nodiscard]] SwapchainSupportDetails query_swap_chain_support(const raii::PhysicalDevice& device) const;
 
 
+	vk::ApplicationInfo appInfo = vk::ApplicationInfo{
+		"LavaChicken on Vulkan - Test App",
+		vk::makeApiVersion(1, 0, 0, 0),
+		"LavaChicken",
+		vk::makeApiVersion(1, 0, 0, 0),
+		vk::ApiVersion14
+	};
 
 	const std::vector<std::string> own_instance_extensions{
 		// Extension names
