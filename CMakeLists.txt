@@ -38,6 +38,8 @@ add_custom_target( Shaders
 add_executable( LavaChicken src/cpp/main.cpp
         src/cpp/Renderer.cpp
         src/cpp/Renderer.h
-        src/cpp/text_formatting.h)
+        src/cpp/text_formatting.h
+        src/cpp/BlackBoard.cpp
+        src/cpp/BlackBoard.h)
 target_link_libraries( LavaChicken PRIVATE VulkanHppModule glfw glm::glm )
 add_dependencies( LavaChicken Shaders)
