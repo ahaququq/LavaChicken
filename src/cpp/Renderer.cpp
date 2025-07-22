@@ -1,29 +1,15 @@
 #include "Renderer.h"
 
+#include <bitset>
+
 #include "text_formatting.h"
+#include <fontconfig/fontconfig.h>
 
 namespace raii = vk::raii;
 
-constexpr std::vector<std::string> own_instance_extensions{
-	// Extension names
-};
-
-constexpr std::vector<std::string> own_instance_layers{
-	// Layer names
-};
-
-const std::vector<const char *> device_extensions = {
-	vk::KHRSwapchainExtensionName
-};
 
 
-
-constexpr unsigned int WIDTH = 800;
-constexpr unsigned int HEIGHT = 600;
-
-
-
-bool has_extensions(const raii::PhysicalDevice &device) {
+bool Renderer::has_extensions(const raii::PhysicalDevice &device) const {
 	const std::vector<vk::ExtensionProperties> available_extensions = device.enumerateDeviceExtensionProperties();
 
 	std::set<std::string> required_extensions{device_extensions.begin(), device_extensions.end()};
@@ -110,6 +96,8 @@ void Renderer::choose_physical_device() {
 	wnd::end_frame();
 
 	physical_device = std::move(ranked_devices.begin()->second);
+
+	wnd::print();
 }
 
 
@@ -177,6 +165,8 @@ void Renderer::create_vulkan_instance() {
 			extensions_vector.data()
 		}
 	};
+
+	wnd::print();
 }
 
 
@@ -238,7 +228,98 @@ void Renderer::create_window() {
 
 
 
-Renderer::Renderer(): instance(nullptr), display_surface(nullptr), physical_device(nullptr) {
+void Renderer::get_queue_indices() {
+	wnd::begin_section("Queues: ");
+	auto queue_family_properties = physical_device.getQueueFamilyProperties();
+
+	unsigned int i = 0;
+	for (auto property: queue_family_properties) {
+		wnd::begin_frame(std::to_string(i));
+
+		vk::QueueFlags flags = property.queueFlags;
+		if (flags & vk::QueueFlagBits::eGraphics) {
+			graphics_queue = i;
+			wnd::print("Graphics");
+		}
+		if (flags & vk::QueueFlagBits::eCompute) {
+			compute_queue = i;
+			wnd::print("Compute");
+		}
+		if (flags & vk::QueueFlagBits::eTransfer) wnd::print("Transfer");
+		if (flags & vk::QueueFlagBits::eSparseBinding) wnd::print("SparseBinding");
+		if (flags & vk::QueueFlagBits::eProtected) wnd::print("Protected");
+		if (flags & vk::QueueFlagBits::eVideoDecodeKHR) {
+			decode_queue = i;
+			wnd::print("Decode");
+		}
+		if (flags & vk::QueueFlagBits::eVideoEncodeKHR) {
+			encode_queue = i;
+			wnd::print("Encode");
+		}
+		if (flags & vk::QueueFlagBits::eOpticalFlowNV) {
+			optical_flow_queue = i;
+			wnd::print("Optical Flow");
+		}
+		if (physical_device.getSurfaceSupportKHR(i, display_surface)) {
+			present_queue = i;
+			wnd::print("Present");
+		}
+		wnd::end_frame();
+
+		i++;
+	}
+	wnd::print();
+}
+
+
+
+void Renderer::create_logical_device() {
+	wnd::begin_section("Logical device:");
+	vk::PhysicalDeviceFeatures physical_device_features;
+
+	const std::set unique_queues = {
+		graphics_queue,
+		present_queue
+	};
+
+	constexpr float queue_priority = 1.0f;
+	std::vector<vk::DeviceQueueCreateInfo> device_queue_create_infos;
+
+	wnd::begin_frame("LavaChicken queues:");
+	for (const auto family: unique_queues) {
+		device_queue_create_infos.emplace_back(vk::DeviceQueueCreateInfo{{}, family, 1, &queue_priority});
+		wnd::print(std::to_string(family));
+	}
+	wnd::end_frame();
+
+	std::vector<const char*> enabled_layer_names = {};
+
+	wnd::begin_frame("LavaChicken device layers:");
+	for (const std::string &name : own_device_layers) {
+		enabled_layer_names.emplace_back(name.c_str());
+		wnd::print(std::string{"+ "} + name);
+	}
+	wnd::end_frame();
+
+	const vk::DeviceCreateInfo device_create_info{
+		{},
+		static_cast<uint32_t>(device_queue_create_infos.size()),
+		device_queue_create_infos.data(),
+		static_cast<uint32_t>(enabled_layer_names.size()),
+		enabled_layer_names.data(),
+		static_cast<uint32_t>(device_extensions.size()),
+		device_extensions.data(),
+		&physical_device_features
+	};
+
+	device = {physical_device, device_create_info};
+
+	wnd::print();
+}
+
+
+
+Renderer::Renderer(): instance(nullptr), display_surface(nullptr), physical_device(nullptr), device(nullptr) {
 	std::cout << "\n\n\n";
 
 	create_window();
@@ -246,6 +327,8 @@ Renderer::Renderer(): instance(nullptr), display_surface(nullptr), physical_devi
 	create_vulkan_instance();
 	create_display_surface();
 	choose_physical_device();
+	get_queue_indices();
+	create_logical_device();
 
 	std::cout << "\n\n\n";
 }
@@ -253,7 +336,8 @@ Renderer::Renderer(): instance(nullptr), display_surface(nullptr), physical_devi
 
 
 Renderer::~Renderer() {
-
+	glfwDestroyWindow(window);
+	glfwTerminate();
 }
 
 void Renderer::main_loop() {
