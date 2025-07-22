@@ -366,10 +366,8 @@ void Renderer::create_logical_device() {
 	device = {physical_device, device_create_info};
 
 	graphics_queue = raii::Queue{device, graphics_queue_index, 0};
-	graphics_queue_index = 0; // Reuse
 	if (graphics_queue_index != present_queue_index) {
 		present_queue = raii::Queue{device, present_queue_index, 1};
-		present_queue_index = 1; // Reuse
 	}
 
 	if (unique_queues.size() > 2) throw std::runtime_error("More queus. Won't deal with them"); // Impossible for now
@@ -423,7 +421,53 @@ vk::Extent2D Renderer::choose_swap_extent(const vk::SurfaceCapabilitiesKHR& capa
 
 
 void Renderer::create_swapchain() {
-	
+	wnd::begin_section("Swapchain: ");
+
+	const SwapchainSupportDetails details = query_swap_chain_support(physical_device);
+	unsigned int minImageCount = std::max(3u, details.capabilities.minImageCount);
+	if(details.capabilities.maxImageCount > 0 && minImageCount > details.capabilities.maxImageCount)
+		minImageCount = details.capabilities.maxImageCount;
+
+	uint32_t imageCount = details.capabilities.minImageCount + 1;
+
+	if (details.capabilities.maxImageCount > 0 && imageCount > details.capabilities.maxImageCount) {
+		imageCount = details.capabilities.maxImageCount;
+	}
+
+	unsigned int queue_family_indices[] = {graphics_queue_index, present_queue_index};
+	unsigned int queue_family_count = (graphics_queue_index != present_queue_index ? 2 : 0);
+
+	vk::SurfaceFormatKHR surface_format = choose_swap_surface_format(details.formats);
+	vk::PresentModeKHR present_mode = choose_swap_present_mode(details.presentModes);
+
+	wnd::print(std::string("# of images: ") + std::to_string(imageCount));
+	wnd::print(std::string("Format: ") + to_string(surface_format.format));
+	wnd::print(std::string("Color space: ") + to_string(surface_format.colorSpace));
+	wnd::print(std::string("Present mode: ") + to_string(present_mode));
+
+	vk::SwapchainCreateInfoKHR swapchain_create_info = {
+		{},
+		display_surface,
+		minImageCount,
+		surface_format.format,
+		surface_format.colorSpace,
+		choose_swap_extent(details.capabilities, window),
+		1,
+		vk::ImageUsageFlagBits::eColorAttachment,
+		queue_family_count ? vk::SharingMode::eConcurrent : vk::SharingMode::eExclusive,
+		queue_family_count,
+		queue_family_count ? queue_family_indices : nullptr,
+		details.capabilities.currentTransform,
+		vk::CompositeAlphaFlagBitsKHR::eOpaque,
+		present_mode,
+		true,
+		nullptr
+	};
+
+	swapchain = raii::SwapchainKHR{device, swapchain_create_info};
+	swapchain_images = swapchain.getImages();
+
+	wnd::print();
 }
 
 
@@ -446,6 +490,7 @@ Renderer::Renderer() {
 
 
 Renderer::~Renderer() {
+	swapchain.clear();
 	glfwDestroyWindow(window);
 	glfwTerminate();
 }

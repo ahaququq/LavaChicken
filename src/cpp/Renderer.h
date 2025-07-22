@@ -36,6 +36,8 @@ private:
 	raii::Queue graphics_queue{nullptr};
 	raii::Queue present_queue{nullptr};
 	raii::Device device{nullptr};
+	raii::SwapchainKHR swapchain{nullptr};
+	std::vector<vk::Image> swapchain_images;
 
 	[[nodiscard]] bool has_extensions(const raii::PhysicalDevice &device) const;
 	[[nodiscard]] short rank_score(const raii::PhysicalDevice &device) const;
