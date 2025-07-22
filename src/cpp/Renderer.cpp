@@ -368,6 +368,8 @@ void Renderer::create_logical_device() {
 	graphics_queue = raii::Queue{device, graphics_queue_index, 0};
 	graphics_queue_index = 0; // Reuse
 
+	if (unique_queues.size() > 1) throw std::runtime_error("More queus. Won't deal with them");
+
 	wnd::print();
 }
 
