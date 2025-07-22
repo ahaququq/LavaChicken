@@ -73,10 +73,7 @@ private:
 	};
 
 	const std::vector<std::string> own_device_layers{
-		vk::KHRSwapchainExtensionName,
-		vk::KHRSpirv14ExtensionName,
-		vk::KHRSynchronization2ExtensionName,
-		vk::KHRCreateRenderpass2ExtensionName
+		// WHAT IS THIS THING
 	};
 
 	const std::vector<const char *> device_extensions = {
