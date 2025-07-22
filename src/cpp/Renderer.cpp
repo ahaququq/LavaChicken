@@ -51,6 +51,7 @@ short Renderer::rank_score(const raii::PhysicalDevice &device) const {
 
 	if (!features.geometryShader) return INT16_MIN;
 	if (!has_extensions(device)) return INT16_MIN;
+	if (properties.apiVersion < vk::ApiVersion13) return INT16_MIN;
 
 	const SwapchainSupportDetails swap_chain_support = query_swap_chain_support(device);
 
