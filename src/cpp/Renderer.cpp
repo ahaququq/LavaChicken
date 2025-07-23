@@ -477,6 +477,8 @@ void Renderer::create_swapchain() {
 
 
 void Renderer::create_image_views() {
+	wnd::begin_section("Image views: ");
+
 	image_views.clear();
 	vk::ImageViewCreateInfo image_view_create_info = {
 		{},
@@ -498,10 +500,20 @@ void Renderer::create_image_views() {
 		}
 	};
 
+	int i = 0;
+
 	for (const auto &image : swapchain_images) {
+		wnd::begin_frame(std::to_string(i++));
 		image_view_create_info.image = image;
+
+		wnd::print(std::string("Format: ") + to_string(image_view_create_info.format));
+
 		image_views.emplace_back(device, image_view_create_info);
+
+		wnd::end_frame();
 	}
+
+	wnd::print();
 }
 
 
