@@ -38,6 +38,8 @@ private:
 	raii::Device device{nullptr};
 	raii::SwapchainKHR swapchain{nullptr};
 	std::vector<vk::Image> swapchain_images;
+	vk::Format format = {};
+	vk::Extent2D extent{};
 
 	[[nodiscard]] bool has_extensions(const raii::PhysicalDevice &device) const;
 	[[nodiscard]] short rank_score(const raii::PhysicalDevice &device) const;

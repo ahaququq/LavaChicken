@@ -445,13 +445,14 @@ void Renderer::create_swapchain() {
 	wnd::print(std::string("Color space: ") + to_string(surface_format.colorSpace));
 	wnd::print(std::string("Present mode: ") + to_string(present_mode));
 
+	vk::Extent2D swap_extent = choose_swap_extent(details.capabilities, window);
 	vk::SwapchainCreateInfoKHR swapchain_create_info = {
 		{},
 		display_surface,
 		minImageCount,
 		surface_format.format,
 		surface_format.colorSpace,
-		choose_swap_extent(details.capabilities, window),
+		swap_extent,
 		1,
 		vk::ImageUsageFlagBits::eColorAttachment,
 		queue_family_count ? vk::SharingMode::eConcurrent : vk::SharingMode::eExclusive,
@@ -466,6 +467,9 @@ void Renderer::create_swapchain() {
 
 	swapchain = raii::SwapchainKHR{device, swapchain_create_info};
 	swapchain_images = swapchain.getImages();
+
+	format = surface_format.format;
+	extent = swap_extent;
 
 	wnd::print();
 }
