@@ -543,5 +543,8 @@ Renderer::~Renderer() {
 }
 
 void Renderer::main_loop() {
-
+	while (!glfwWindowShouldClose(window)) {
+		glfwWaitEvents();
+		glfwSwapBuffers(window);
+	}
 }

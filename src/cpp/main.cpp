@@ -756,6 +756,8 @@ namespace raii = vk::raii;
 void start() {
 	Renderer renderer;
 
+	renderer.main_loop();
+
 	return;
 	// ---------- Init window ----------
 
