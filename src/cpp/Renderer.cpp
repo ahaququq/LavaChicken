@@ -476,6 +476,36 @@ void Renderer::create_swapchain() {
 
 
 
+void Renderer::create_image_views() {
+	image_views.clear();
+	vk::ImageViewCreateInfo image_view_create_info = {
+		{},
+		{},
+		vk::ImageViewType::e2D,
+		format,
+		vk::ComponentMapping{
+			vk::ComponentSwizzle::eIdentity,
+			vk::ComponentSwizzle::eIdentity,
+			vk::ComponentSwizzle::eIdentity,
+			vk::ComponentSwizzle::eIdentity
+		},
+		vk::ImageSubresourceRange{
+			vk::ImageAspectFlagBits::eColor,
+			0,
+			1,
+			0,
+			1
+		}
+	};
+
+	for (const auto &image : swapchain_images) {
+		image_view_create_info.image = image;
+		image_views.emplace_back(device, image_view_create_info);
+	}
+}
+
+
+
 Renderer::Renderer() {
 	std::cout << "\n\n\n";
 
@@ -487,6 +517,7 @@ Renderer::Renderer() {
 	get_queue_indices();
 	create_logical_device();
 	create_swapchain();
+	create_image_views();
 
 	std::cout << "\n\n\n";
 }

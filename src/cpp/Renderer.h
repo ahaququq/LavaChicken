@@ -40,6 +40,7 @@ private:
 	std::vector<vk::Image> swapchain_images;
 	vk::Format format = {};
 	vk::Extent2D extent{};
+	std::vector<raii::ImageView> image_views;
 
 	[[nodiscard]] bool has_extensions(const raii::PhysicalDevice &device) const;
 	[[nodiscard]] short rank_score(const raii::PhysicalDevice &device) const;
@@ -50,6 +51,7 @@ private:
 	void get_queue_indices();
 	void create_logical_device();
 	void create_swapchain();
+	void create_image_views();
 
 	static vk::SurfaceFormatKHR choose_swap_surface_format(const std::vector<vk::SurfaceFormatKHR> &availableFormats);
 	static vk::PresentModeKHR choose_swap_present_mode(const std::vector<vk::PresentModeKHR> &availablePresentModes);
