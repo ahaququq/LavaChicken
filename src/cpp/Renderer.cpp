@@ -3,7 +3,6 @@
 #include <bitset>
 
 #include "text_formatting.h"
-#include <fontconfig/fontconfig.h>
 
 namespace raii = vk::raii;
 
