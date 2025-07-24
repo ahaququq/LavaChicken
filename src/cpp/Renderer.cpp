@@ -310,7 +310,6 @@ void Renderer::get_queue_indices() {
 
 void Renderer::create_logical_device() {
 	wnd::begin_section("Logical device:");
-	vk::PhysicalDeviceFeatures physical_device_features;
 
 	const std::set unique_queues = {
 		graphics_queue_index,
