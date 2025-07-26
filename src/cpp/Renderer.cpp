@@ -1,11 +1,17 @@
 #include "Renderer.h"
 
 #include <bitset>
+#include <fstream>
+#include <iostream>
+#include <unordered_set>
+#include <map>
+#include <set>
+#include <chrono>
 
 #include "text_formatting.h"
 
 namespace raii = vk::raii;
-
+namespace ch = std::chrono;
 
 
 bool Renderer::has_extensions(const raii::PhysicalDevice &device) const {
@@ -329,6 +335,20 @@ void Renderer::create_logical_device() {
 	// Create a chain of feature structures
 	vk::StructureChain featureChain = {
 		physical_device.getFeatures2(), // vk::PhysicalDeviceFeatures2 (empty for now)
+		vk::PhysicalDeviceVulkan11Features{
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			false,
+			true
+		},
 		vk::PhysicalDeviceVulkan13Features{
 			false,
 			false,
@@ -339,7 +359,7 @@ void Renderer::create_logical_device() {
 			false,
 			false,
 			false,
-			false,
+			true,
 			false,
 			false,
 			true,
@@ -366,6 +386,8 @@ void Renderer::create_logical_device() {
 	graphics_queue = raii::Queue{device, graphics_queue_index, 0};
 	if (graphics_queue_index != present_queue_index) {
 		present_queue = raii::Queue{device, present_queue_index, 1};
+	} else {
+		present_queue = graphics_queue;
 	}
 
 	if (unique_queues.size() > 2) throw std::runtime_error("More queus. Won't deal with them"); // Impossible for now
@@ -516,6 +538,338 @@ void Renderer::create_image_views() {
 
 
 
+std::vector<char> Renderer::readFile(const std::string& filename) {
+	std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+	if (!file.is_open()) {
+		throw std::runtime_error("failed to open file!");
+	}
+
+	const long fileSize = file.tellg();
+	std::vector<char> buffer(fileSize);
+
+	file.seekg(0);
+	file.read(buffer.data(), fileSize);
+	file.close();
+
+	return buffer;
+}
+
+
+
+raii::ShaderModule Renderer::create_shader_module(std::vector<char> code) const {
+	const vk::ShaderModuleCreateInfo create_info = {
+		{},
+		code.size() * sizeof(char),
+		reinterpret_cast<const uint32_t *>(code.data())
+	};
+
+	return raii::ShaderModule{device, create_info};
+}
+
+
+
+void Renderer::create_graphics_pipeline() {
+	wnd::begin_section("Graphics pipeline: ");
+	wnd::begin_frame("Shader.spv");
+	const std::vector<char> shader_code = readFile("shader.spv");
+	wnd::print(std::string("Buffer size: ") + std::to_string(shader_code.size()));
+	wnd::end_frame();
+
+	raii::ShaderModule shader_module = create_shader_module(shader_code);
+
+	vk::PipelineShaderStageCreateInfo vertex_stage_create_info = {
+		{},
+		vk::ShaderStageFlagBits::eVertex,
+		shader_module,
+		"vertMain",
+		nullptr
+	};
+
+	vk::PipelineShaderStageCreateInfo fragment_stage_create_info = {
+		{},
+		vk::ShaderStageFlagBits::eFragment,
+		shader_module,
+		"fragMain",
+		nullptr
+	};
+
+	std::vector shader_stages = {vertex_stage_create_info, fragment_stage_create_info};
+
+	std::vector dynamic_states = {
+		vk::DynamicState::eViewport,
+		vk::DynamicState::eScissor
+	};
+
+	vk::PipelineDynamicStateCreateInfo dynamic_state_create_info = {
+		{},
+		static_cast<uint32_t>(dynamic_states.size()),
+		dynamic_states.data()
+	};
+
+	vk::PipelineVertexInputStateCreateInfo vertex_input_state_create_info = {};
+
+	vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info = {
+		{},
+		vk::PrimitiveTopology::eTriangleList,
+		false,
+	};
+
+	vk::PipelineViewportStateCreateInfo viewport_state = {
+		{},
+		1,
+		nullptr,
+		1,
+		nullptr,
+	};
+
+	vk::PipelineRasterizationStateCreateInfo rasterization_state_create_info = {
+		{},
+		false,
+		false,
+		vk::PolygonMode::eFill,
+		vk::CullModeFlagBits::eBack,
+		vk::FrontFace::eClockwise,
+		false,
+		0.0f,
+		0.0f,
+		1.0f,
+		1.0f,
+	};
+
+	vk::PipelineMultisampleStateCreateInfo multisample_state_create_info = {
+		{},
+		vk::SampleCountFlagBits::e1,
+		false,
+		0.0f,
+		nullptr,
+		false,
+		false
+	};
+
+	vk::PipelineColorBlendAttachmentState blend_attachment_state = {
+		false,
+		vk::BlendFactor::eSrcAlpha,
+		vk::BlendFactor::eOneMinusSrcAlpha,
+		vk::BlendOp::eAdd,
+		vk::BlendFactor::eOne,
+		vk::BlendFactor::eZero,
+		vk::BlendOp::eAdd,
+		vk::ColorComponentFlagBits::eR |
+		vk::ColorComponentFlagBits::eG |
+		vk::ColorComponentFlagBits::eB |
+		vk::ColorComponentFlagBits::eA,
+	};
+
+	std::vector blend_attachments = {
+		blend_attachment_state
+	};
+
+	vk::PipelineColorBlendStateCreateInfo blend_state_create_info = {
+		{},
+		false,
+		vk::LogicOp::eCopy,
+		static_cast<uint32_t>(blend_attachments.size()),
+		blend_attachments.data(),
+		{0.0, 0.0, 0.0, 0.0}
+	};
+
+	vk::PipelineLayoutCreateInfo pipeline_layout_create_info = {
+		{},
+		0,
+		nullptr,
+		0,
+		nullptr
+	};
+
+	pipeline_layout = raii::PipelineLayout{
+		device,
+		pipeline_layout_create_info
+	};
+
+	vk::PipelineRenderingCreateInfo rendering_create_info = {
+		{},
+		1,
+		&format,
+		vk::Format::eUndefined,
+		vk::Format::eUndefined,
+	};
+
+	vk::GraphicsPipelineCreateInfo pipeline_create_info = {
+		{},
+		static_cast<uint32_t>(shader_stages.size()),
+		shader_stages.data(),
+		&vertex_input_state_create_info,
+		&input_assembly_create_info,
+		nullptr,
+		&viewport_state,
+		&rasterization_state_create_info,
+		&multisample_state_create_info,
+		nullptr,
+		&blend_state_create_info,
+		&dynamic_state_create_info,
+		pipeline_layout,
+		nullptr,
+		0,
+		nullptr,
+		-1,
+		&rendering_create_info
+	};
+
+	graphics_pipeline = raii::Pipeline{
+		device,
+		nullptr,
+		pipeline_create_info
+	};
+
+	wnd::print();
+}
+
+
+
+void Renderer::create_command_pool() {
+	vk::CommandPoolCreateInfo pool_create_info = {
+		{vk::CommandPoolCreateFlagBits::eResetCommandBuffer},
+		graphics_queue_index
+	};
+
+	command_pool = raii::CommandPool{
+		device,
+		pool_create_info
+	};
+}
+
+
+
+void Renderer::create_command_buffer() {
+	vk::CommandBufferAllocateInfo command_buffer_allocate_info = {
+		command_pool,
+		vk::CommandBufferLevel::ePrimary,
+		1
+	};
+
+	raii::CommandBuffers command_buffers = {
+		device,
+		command_buffer_allocate_info
+	};
+
+	command_buffer = std::move(command_buffers.front());
+}
+
+
+
+void Renderer::transition_image_layout(
+    uint32_t imageIndex,
+    vk::ImageLayout oldLayout,
+    vk::ImageLayout newLayout,
+    vk::AccessFlags2 srcAccessMask,
+    vk::AccessFlags2 dstAccessMask,
+    vk::PipelineStageFlags2 srcStageMask,
+    vk::PipelineStageFlags2 dstStageMask
+) {
+	vk::ImageMemoryBarrier2 barrier = {
+		srcStageMask,
+		srcAccessMask,
+		dstStageMask,
+		dstAccessMask,
+		oldLayout,
+		newLayout,
+		vk::QueueFamilyIgnored,
+		vk::QueueFamilyIgnored,
+		swapchain_images[imageIndex],
+		vk::ImageSubresourceRange{
+			vk::ImageAspectFlagBits::eColor,
+			0,
+			1,
+			0,
+			1
+		    }
+	};
+
+	vk::DependencyInfo dependencyInfo = {
+		{},
+		0,
+		nullptr,
+		0,
+		nullptr,
+		1,
+		&barrier
+	};
+
+	command_buffer.pipelineBarrier2(dependencyInfo);
+}
+
+
+
+void Renderer::record_command_buffer(const unsigned int& index) {
+	command_buffer.begin({});
+
+	transition_image_layout(
+		index,
+		vk::ImageLayout::eUndefined,
+		vk::ImageLayout::eColorAttachmentOptimal,
+		vk::AccessFlagBits2::eNone,
+		vk::AccessFlagBits2::eColorAttachmentWrite,
+		vk::PipelineStageFlagBits2::eTopOfPipe,
+		vk::PipelineStageFlagBits2::eColorAttachmentOutput
+	);
+
+	constexpr vk::ClearValue clear_color = vk::ClearColorValue(0.2f, 0.4f, 0.8f, 1.0f);
+
+	vk::RenderingAttachmentInfo attachment_info = {
+		image_views[index],
+		vk::ImageLayout::eColorAttachmentOptimal,
+		vk::ResolveModeFlagBits::eNone,
+		nullptr,
+		vk::ImageLayout::eUndefined,
+		vk::AttachmentLoadOp::eClear,
+		vk::AttachmentStoreOp::eStore,
+		clear_color
+	};
+
+	vk::RenderingInfo rendering_info = {
+		{},
+		{{0, 0}, extent},
+		1,
+		0,
+		1,
+		&attachment_info,
+		nullptr,
+		nullptr
+	};
+
+	command_buffer.beginRendering(rendering_info);
+	command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipeline);
+	command_buffer.setViewport(0, vk::Viewport(
+		0.0f, 0.0f,
+		static_cast<float>(extent.width), static_cast<float>(extent.height),
+		0.0f,1.0f));
+	command_buffer.setScissor(0, vk::Rect2D(vk::Offset2D(0, 0), extent));
+	command_buffer.draw(3, 1, 0, 0);
+	command_buffer.endRendering();
+	transition_image_layout(
+		index,
+		vk::ImageLayout::eColorAttachmentOptimal,
+		vk::ImageLayout::ePresentSrcKHR,
+		vk::AccessFlagBits2::eColorAttachmentWrite,
+		vk::AccessFlagBits2::eNone,
+		vk::PipelineStageFlagBits2::eColorAttachmentOutput,
+		vk::PipelineStageFlagBits2::eBottomOfPipe
+		);
+
+	command_buffer.end();
+}
+
+
+
+void Renderer::create_sync_objects() {
+	present_complete_semaphore = raii::Semaphore{ device, vk::SemaphoreCreateInfo{}};
+	render_finished_semaphore = raii::Semaphore{ device, vk::SemaphoreCreateInfo{}};
+	draw_fence = raii::Fence{ device, {{vk::FenceCreateFlagBits::eSignaled}}};
+}
+
+
+
 Renderer::Renderer() {
 	std::cout << "\n\n\n";
 
@@ -529,6 +883,11 @@ Renderer::Renderer() {
 	create_swapchain();
 	create_image_views();
 
+	create_graphics_pipeline();
+	create_command_pool();
+	create_command_buffer();
+	create_sync_objects();
+
 	std::cout << "\n\n\n";
 }
 
@@ -540,9 +899,71 @@ Renderer::~Renderer() {
 	glfwTerminate();
 }
 
+
+
+void Renderer::draw_frame() {
+	auto [result, imageIndex] = swapchain.acquireNextImage(
+		UINT64_MAX,
+		*present_complete_semaphore,
+		nullptr);
+
+	record_command_buffer(imageIndex);
+	device.resetFences(*draw_fence);
+
+	vk::PipelineStageFlags wait_destination_stage_mask = {
+		vk::PipelineStageFlagBits::eColorAttachmentOutput
+	};
+
+	vk::SubmitInfo submit_info = {
+		*present_complete_semaphore,
+		wait_destination_stage_mask,
+		*command_buffer,
+		*render_finished_semaphore
+	};
+
+	graphics_queue.submit(submit_info, draw_fence);
+
+	while (device.waitForFences(*draw_fence, true, UINT64_MAX) == vk::Result::eTimeout) {}
+
+	const vk::PresentInfoKHR presentInfoKHR = {
+		*render_finished_semaphore,
+		*swapchain,
+		imageIndex
+	};
+
+	result = present_queue.presentKHR(presentInfoKHR);
+
+	//glfwSwapBuffers(window);
+}
+
+
 void Renderer::main_loop() {
+	if (NO_FRAMES) return;
+
+	unsigned short i = 0;
+	unsigned long long frame_time = 0;
+	constexpr unsigned short max_i = 1'000;
+
 	while (!glfwWindowShouldClose(window)) {
-		glfwWaitEvents();
-		glfwSwapBuffers(window);
+		auto begin = ch::high_resolution_clock::now();
+
+		glfwPollEvents();
+		draw_frame();
+
+		auto end = ch::high_resolution_clock::now();
+
+		frame_time += ch::duration_cast<ch::microseconds>(end - begin).count();
+
+		if (i++ >= max_i) {
+			const unsigned long long arg_frame_time = frame_time / max_i;
+			std::cout << "Time : ";
+			std::cout << arg_frame_time * 0.00'1;
+			std::cout << "\tms\t; FPS: ";
+			std::cout << 1'000'000.0 / arg_frame_time << "\n";
+			frame_time = 0;
+			i = 0;
+		}
 	}
+
+	device.waitIdle();
 }
