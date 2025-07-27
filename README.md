@@ -16,7 +16,7 @@ Currently, I have no idea if anything comes out of it
 - [x] Get a window to show up
   - [x] Make it render on Wayland
 - [x] Show a triangle
-  - [ ] Again, with current rewritten systems
+  - [x] Again, with current rewritten systems
 - [ ] Get perspective working
 - [ ] Load a more interesting test mesh
 - [ ] Make it rotate
