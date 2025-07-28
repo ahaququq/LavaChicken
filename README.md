@@ -4,8 +4,6 @@
 
 ![Hackatime Badge](https://hackatime-badge.hackclub.com/U091YATPU74/LavaChicken)
 
-![Stats](https://github-readme-stats.hackclub.dev/api/wakatime?username=8707&api_domain=hackatime.hackclub.com&&custom_title=Hackatime+Stats&layout=compact&cache_seconds=0&langs_count=8&theme=github_dark)
-
 ## What is it?
 
 It's a simple "game engine" based on the Vulkan graphics API.
